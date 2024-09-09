@@ -160,3 +160,599 @@ Console.WriteLine($"Long: {longValue}, Rounded Int: {roundedValue}");
 ## Next Steps
 
 Explore [Structs](03_Structs.md) to learn about user-defined value types that can encapsulate related data and functionality.
+
+
+# Structs in C#
+
+Structs are user-defined value types that can encapsulate data and related functionality. They are useful for creating lightweight objects and are particularly efficient when you have small data structures that have value semantics.
+
+## Defining a Struct
+
+```csharp
+public struct Point
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public Point(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
+
+    public double Distance(Point other)
+    {
+        int dx = X - other.X;
+        int dy = Y - other.Y;
+        return Math.Sqrt(dx*dx + dy*dy);
+    }
+}
+```
+
+## Key Characteristics of Structs
+
+1. **Value Type**: Structs are value types and are stored on the stack.
+2. **Cannot Inherit**: Structs cannot inherit from other structs or classes, but they can implement interfaces.
+3. **Can Have Methods**: Unlike primitive types, structs can have methods, properties, and fields.
+4. **Default Constructor**: Structs always have a public parameterless constructor, even if you don't define one.
+5. **Performance**: Generally more efficient than classes for small data structures.
+
+## Using Structs
+
+```csharp
+Point p1 = new Point(3, 4);
+Point p2 = p1; // Creates a copy of p1
+
+p2.X = 7; // Doesn't affect p1
+
+Console.WriteLine($"p1: ({p1.X}, {p1.Y})"); // Output: p1: (3, 4)
+Console.WriteLine($"p2: ({p2.X}, {p2.Y})"); // Output: p2: (7, 4)
+
+double distance = p1.Distance(p2);
+Console.WriteLine($"Distance: {distance}");
+```
+
+## Memory Allocation
+
+```
+Stack
++---------------+
+| p1.X  |   3   |
+| p1.Y  |   4   |
++---------------+
+| p2.X  |   7   |
+| p2.Y  |   4   |
++---------------+
+```
+
+## When to Use Structs
+
+- When the structure is small (generally less than 16 bytes).
+- When the structure is immutable.
+- When instances of the structure are short-lived.
+- When the structure will not be boxed frequently.
+
+## Best Practices
+
+1. Keep structs small and immutable when possible.
+2. Override `Equals()` and `GetHashCode()` for value equality comparisons.
+3. Implement the `IEquatable<T>` interface for better performance in collections.
+4. Be cautious with mutable structs as they can lead to unexpected behavior.
+
+## Next Steps
+
+Explore [Enums](04_Enums.md) to learn about another important value type used for defining named constants in C#.
+
+
+# Enums in C#
+
+Enums (short for enumerations) are value types in C# used to define named constants. They provide a way to create a set of named values that can be assigned to a variable.
+
+## Defining an Enum
+
+```csharp
+public enum DaysOfWeek
+{
+    Sunday,    // 0
+    Monday,    // 1
+    Tuesday,   // 2
+    Wednesday, // 3
+    Thursday,  // 4
+    Friday,    // 5
+    Saturday   // 6
+}
+```
+
+## Key Characteristics of Enums
+
+1. **Value Type**: Enums are value types and are stored on the stack.
+2. **Underlying Type**: By default, the underlying type is `int`, but this can be changed.
+3. **Named Constants**: Each enum member is a named constant.
+4. **Implicit Values**: By default, enum members are assigned increasing integer values starting from 0.
+
+## Using Enums
+
+```csharp
+DaysOfWeek today = DaysOfWeek.Wednesday;
+Console.WriteLine(today); // Output: Wednesday
+
+// Casting between enum and integer
+int dayNumber = (int)today;
+Console.WriteLine(dayNumber); // Output: 3
+
+DaysOfWeek convertedDay = (DaysOfWeek)3;
+Console.WriteLine(convertedDay); // Output: Wednesday
+```
+
+## Specifying Enum Values
+
+You can explicitly specify the values for enum members:
+
+```csharp
+public enum FileAccess
+{
+    Read = 1,
+    Write = 2,
+    ReadWrite = Read | Write, // 3
+    Execute = 4
+}
+```
+
+## Enum with Different Base Type
+
+```csharp
+public enum LongEnum : long
+{
+    Max = 9223372036854775807,
+    Min = -9223372036854775808
+}
+```
+
+## Useful Enum Methods
+
+- `Enum.GetNames()`: Returns an array of the names of the constants.
+- `Enum.GetValues()`: Returns an array of the values of the constants.
+- `Enum.Parse()`: Converts a string to its enum equivalent.
+- `Enum.TryParse()`: Safely attempts to convert a string to an enum value.
+
+## Best Practices
+
+1. Use enums for distinct sets of named constants.
+2. Consider using the [Flags] attribute for enums representing bitwise flags.
+3. Be cautious when explicitly assigning values to ensure uniqueness.
+4. Use PascalCase for enum names and members.
+
+## Example: Using [Flags] Attribute
+
+```csharp
+[Flags]
+public enum Permissions
+{
+    None = 0,
+    Read = 1,
+    Write = 2,
+    Execute = 4,
+    All = Read | Write | Execute
+}
+
+Permissions userPermissions = Permissions.Read | Permissions.Write;
+Console.WriteLine(userPermissions); // Output: Read, Write
+```
+
+## Next Steps
+
+Explore [Memory Allocation for Value Types](05_MemoryAllocation.md) to understand how value types are stored and managed in memory.
+
+
+# Memory Allocation for Value Types in C#
+
+Understanding how value types are allocated in memory is crucial for optimizing performance and managing resources effectively in C# applications.
+
+## Stack vs Heap
+
+- **Stack**: A region of memory where value types are typically stored.
+- **Heap**: A region of memory where reference types (objects) are stored.
+
+## Value Types and the Stack
+
+1. **Direct Storage**: Value types are stored directly on the stack.
+2. **Fixed Size**: The memory allocated is of a fixed size, determined at compile-time.
+3. **Fast Allocation/Deallocation**: Allocating and deallocating on the stack is very fast.
+4. **Scope-Based Lifetime**: When a method completes, its stack frame is popped off, automatically cleaning up value types.
+
+## Memory Layout Example
+
+Consider the following code:
+
+```csharp
+public struct Point
+{
+    public int X;
+    public int Y;
+}
+
+public void MethodA()
+{
+    int a = 5;
+    Point p = new Point { X = 10, Y = 20 };
+    MethodB(p);
+}
+
+public void MethodB(Point point)
+{
+    int b = 15;
+    // Method body
+}
+```
+
+The stack might look like this during execution:
+
+```
+Stack (grows downward)
++------------------+
+|    MethodB       |
+| b         |  15  |
+| point.Y   |  20  |
+| point.X   |  10  |
++------------------+
+|    MethodA       |
+| p.Y       |  20  |
+| p.X       |  10  |
+| a         |   5  |
++------------------+
+```
+
+## Value Types in Classes
+
+When value types are fields in a class, they are allocated as part of the object on the heap:
+
+```csharp
+public class Rectangle
+{
+    public Point TopLeft;
+    public Point BottomRight;
+}
+
+Rectangle rect = new Rectangle 
+{ 
+    TopLeft = new Point { X = 0, Y = 0 },
+    BottomRight = new Point { X = 100, Y = 100 }
+};
+```
+
+Memory layout:
+
+```
+Stack                  Heap
++-----------+          +------------------------+
+| rect      |--------->| Rectangle Object       |
+| [Reference]          | TopLeft.X    |    0    |
++-----------+          | TopLeft.Y    |    0    |
+                       | BottomRight.X|  100    |
+                       | BottomRight.Y|  100    |
+                       +------------------------+
+```
+
+## Performance Implications
+
+1. **Fast Access**: Value types on the stack are generally faster to access.
+2. **No Garbage Collection**: Value types on the stack don't involve the garbage collector.
+3. **Copy Semantics**: Assigning or passing value types creates a copy, which can be expensive for large structs.
+
+## Best Practices
+
+1. Use value types for small, simple structures.
+2. Be cautious with large value types, as copying can impact performance.
+3. Consider using `ref` or `in` parameters for large structs to avoid copying.
+4. Be aware of value type fields in classes, as they contribute to the overall object size.
+
+## Next Steps
+
+Explore [Boxing and Unboxing](06_BoxingUnboxing.md) to understand how value types interact with the object type system in C#.
+
+
+# Boxing and Unboxing in C#
+
+Boxing and unboxing are processes that enable value types to be treated as objects. These operations are important to understand for performance considerations and type safety.
+
+## Boxing
+
+Boxing is the process of converting a value type to the type `object` or to any interface type implemented by this value type.
+
+### How Boxing Works
+
+1. A new object is allocated on the managed heap.
+2. The value is copied into the new object.
+
+### Example of Boxing
+
+```csharp
+int i = 123;
+object boxed = i;  // Boxing occurs here
+```
+
+Memory representation:
+
+```
+Stack              Heap
++-------+          +-------------+
+|   i   |          |    boxed    |
+| (123) |          | +-------+   |
++-------+          | |  123  |   |
+                   | +-------+   |
+                   +-------------+
+```
+
+## Unboxing
+
+Unboxing is the process of converting the object reference back to a value type.
+
+### How Unboxing Works
+
+1. Check that the object instance is a boxed value of the given value type.
+2. Copy the value from the instance into the value type variable.
+
+### Example of Unboxing
+
+```csharp
+object boxed = 123;
+int j = (int)boxed;  // Unboxing occurs here
+```
+
+## Performance Implications
+
+- Boxing and unboxing are computationally expensive operations.
+- They require memory allocation and copy operations.
+- Frequent boxing and unboxing can lead to performance issues and increased memory usage.
+
+## Common Scenarios for Boxing
+
+1. When passing a value type to a method that takes an `object` parameter.
+2. When storing a value type in a collection that stores `object` types.
+
+```csharp
+ArrayList list = new ArrayList();
+list.Add(10);  // Boxing occurs here
+```
+
+## Avoiding Unnecessary Boxing
+
+1. Use generics where possible.
+2. Use strongly-typed collections instead of collections of `object`.
+
+```csharp
+List<int> list = new List<int>();
+list.Add(10);  // No boxing occurs
+```
+
+## Best Practices
+
+1. Be aware of implicit boxing, especially when using non-generic collections or methods.
+2. Use generic types and methods to avoid boxing when working with value types.
+3. Consider the performance impact when designing APIs that might cause frequent boxing/unboxing.
+
+## Next Steps
+
+Explore [Value Types vs Reference Types](07_ValueVsReference.md) to understand the key differences and when to use each.
+
+
+
+# Value Types vs Reference Types in C#
+
+Understanding the differences between value types and reference types is crucial for effective C# programming. These two categories of types have different behaviors in terms of memory allocation, assignment, and passing as method parameters.
+
+## Key Differences
+
+| Aspect | Value Types | Reference Types |
+|--------|-------------|-----------------|
+| Memory allocation | Stack (usually) | Heap |
+| Default value | Zero/null equivalent | null |
+| Assignment behavior | Creates a copy | Creates a reference |
+| Passing to methods | By value (copy) | By reference |
+| Garbage collection | Not subject to GC | Subject to GC |
+| Inheritance | Cannot inherit | Can inherit |
+| Examples | int, struct, enum | class, interface, delegate, array |
+
+## Memory Allocation
+
+### Value Types
+```csharp
+int x = 10;
+```
+```
+Stack
++-------+
+|   x   |
+| (10)  |
++-------+
+```
+
+### Reference Types
+```csharp
+class Person { public string Name; }
+Person p = new Person();
+```
+```
+Stack              Heap
++-------+          +-------------+
+|   p   |--------->|   Person    |
+|  ref  |          | Name: null  |
++-------+          +-------------+
+```
+
+## Assignment Behavior
+
+### Value Types
+```csharp
+int a = 10;
+int b = a;  // 'b' gets a copy of 'a'
+b = 20;     // Doesn't affect 'a'
+```
+
+### Reference Types
+```csharp
+Person p1 = new Person { Name = "Alice" };
+Person p2 = p1;  // 'p2' references the same object as 'p1'
+p2.Name = "Bob"; // Changes are visible through both 'p1' and 'p2'
+```
+
+## Method Parameters
+
+### Value Types
+```csharp
+void Increment(int x)
+{
+    x++;  // Only affects the local copy
+}
+
+int number = 5;
+Increment(number);  // 'number' is still 5
+```
+
+### Reference Types
+```csharp
+void ChangeName(Person p)
+{
+    p.Name = "Charlie";  // Affects the original object
+}
+
+Person person = new Person { Name = "Alice" };
+ChangeName(person);  // person.Name is now "Charlie"
+```
+
+## Performance Considerations
+
+- Value types are generally more efficient for small data structures.
+- Reference types can be more efficient for large data structures or when sharing is needed.
+- Frequent boxing/unboxing of value types can impact performance.
+
+## When to Use Each
+
+### Use Value Types When:
+- The data structure is small (generally < 16 bytes).
+- The type has value semantics (equality based on value, not identity).
+- Instances are short-lived or frequently created/destroyed.
+
+### Use Reference Types When:
+- The data structure is large.
+- You need to inherit from the type.
+- You need reference semantics (equality based on identity).
+- You need to share instances across multiple parts of your code.
+
+## Best Practices
+
+1. Choose between value and reference types based on the semantics of your data, not just size.
+2. Be aware of performance implications, especially with large structs.
+3. Use `ref` or `in` parameters for large value types to avoid copying.
+4. Consider immutability for both value and reference types for safer code.
+
+## Next Steps
+
+Explore [Nullable Value Types](08_NullableValueTypes.md) to learn how C# allows value types to represent null values.
+
+
+# Nullable Value Types in C#
+
+Nullable value types combine the efficiency of value types with the ability to represent null values, which is traditionally a characteristic of reference types. This feature is particularly useful when dealing with databases or any scenario where a value might be missing or undefined.
+
+## Syntax
+
+Nullable value types are denoted by appending a question mark (`?`) to the type:
+
+```csharp
+int? nullableInt = null;
+double? nullableDouble = 3.14;
+bool? nullableBool = null;
+```
+
+## How Nullable Types Work
+
+- Nullable types are instances of the `System.Nullable<T>` struct.
+- They consist of two fields: the value itself and a boolean indicating whether the value is null.
+
+## Properties of Nullable Types
+
+- `HasValue`: Returns `true` if the instance contains a value, `false` if it's null.
+- `Value`: Gets the value if `HasValue` is true. Throws `InvalidOperationException` if `HasValue` is false.
+
+```csharp
+int? x = 10;
+if (x.HasValue)
+{
+    Console.WriteLine(x.Value);  // Outputs: 10
+}
+```
+
+## Null Coalescing Operator (??)
+
+The `??` operator provides a concise way to handle null values:
+
+```csharp
+int? nullableNum = null;
+int result = nullableNum ?? 0;  // result will be 0
+```
+
+## Nullable Types in Conditionals
+
+Nullable types can be used directly in conditional statements:
+
+```csharp
+bool? isEnabled = null;
+
+if (isEnabled == true)
+{
+    Console.WriteLine("Explicitly enabled");
+}
+else if (isEnabled == false)
+{
+    Console.WriteLine("Explicitly disabled");
+}
+else
+{
+    Console.WriteLine("Neither enabled nor disabled (null)");
+}
+```
+
+## Boxing and Unboxing with Nullable Types
+
+Nullable types have special boxing and unboxing behavior:
+
+```csharp
+int? x = 5;
+object o = x;  // Boxes to 5, not to a nullable int
+int? y = (int?)o;  // Unboxes back to a nullable int
+```
+
+## Use Cases
+
+1. **Database Interactions**: Representing nullable columns in databases.
+2. **Optional Parameters**: In methods where a parameter might not always be needed.
+3. **Return Values**: When a method might not always have a valid return value.
+
+## Performance Considerations
+
+- Nullable types are slightly larger and slower than their non-nullable counterparts.
+- They involve a small overhead due to the additional boolean flag.
+
+## Best Practices
+
+1. Use nullable types judiciously, primarily for representing truly optional values.
+2. Always check `HasValue` before accessing `Value` to avoid exceptions.
+3. Consider using the null coalescing operator for providing default values.
+4. Be aware of the performance implications when using nullable types extensively.
+
+## C# 8.0 and Nullable Reference Types
+
+With C# 8.0, Microsoft introduced nullable reference types, extending the concept of nullability to reference types:
+
+```csharp
+#nullable enable
+string? nullableString = null;  // Explicitly nullable
+string nonNullableString = "Hello";  // Cannot be null
+```
+
+This feature helps in preventing null reference exceptions by enforcing null checks at compile-time.
+
+## Next Steps
+
+Explore [Performance Considerations](09_Performance.md) to understand how different uses of value types can impact your application's performance.
