@@ -4,7 +4,7 @@ This repository provides an in-depth exploration of value types in C#. It covers
 
 ## Table of Contents
 
-1. [Introduction to Value Types](01_Introduction.md)
+1. [Introduction to Value Types](#Introduction-to-Value-Types-in-C#)
 2. [Primitive Value Types](02_PrimitiveTypes.md)
 3. [Structs](03_Structs.md)
 4. [Enums](04_Enums.md)
@@ -28,7 +28,7 @@ Value types are fundamental to C# programming and understanding them is crucial 
 
 Each topic is explained with code examples, memory diagrams, and practical tips.
 
-# Introduction to Value Types in C#
+## Introduction to Value Types in C#
 
 Value types are one of the two main categories of types in C#, the other being reference types. Understanding value types is crucial for efficient memory management and performance optimization in C# programming.
 
