@@ -4,7 +4,7 @@ This repository provides an in-depth exploration of value types in C#. It covers
 
 ## Table of Contents
 
-1. [Introduction to Value Types](#Introduction-to-Value-Types-in-C#)
+1. [Introduction to Value Types](#introduction-to-value-types-in-C#)
 2. [Primitive Value Types](02_PrimitiveTypes.md)
 3. [Structs](03_Structs.md)
 4. [Enums](04_Enums.md)
